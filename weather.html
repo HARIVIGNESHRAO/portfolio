@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Real-time Weather Dashboard - Hari Vignesh Rao">
+    <title>Weather Dashboard | Hari Vignesh Rao</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <nav aria-label="Main Navigation">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="todo.html">To-Do</a></li>
+                <li><a href="weather.html" aria-current="page">Weather</a></li>
+            </ul>
+            <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle Dark Mode">🌙</button>
+        </nav>
+    </header>
+
+    <main>
+        <section class="weather-section">
+            <h1>Live Weather Dashboard</h1>
+
+            <div class="search-box">
+                <input type="text" id="cityInput" placeholder="Enter city name (e.g., Hyderabad)" aria-label="City name">
+                <button onclick="getWeather()">Search</button>
+            </div>
+
+            <div id="loading" class="hidden">Loading weather data...</div>
+            <div id="error" class="hidden"></div>
+
+            <div id="weatherData" class="weather-card hidden">
+                <h2 id="cityName"></h2>
+                <div class="temp" id="temperature"></div>
+                <div class="description" id="description"></div>
+
+                <div class="weather-details">
+                    <div class="detail">
+                        <span>Humidity</span>
+                        <strong id="humidity"></strong>
+                    </div>
+                    <div class="detail">
+                        <span>Wind Speed</span>
+                        <strong id="wind"></strong>
+                    </div>
+                    <div class="detail">
+                        <span>Feels Like</span>
+                        <strong id="feelsLike"></strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Hari Vignesh Rao. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // Using Open-Meteo + a free geocoding service (no API key needed)
+        async function getWeather() {
+            const cityInput = document.getElementById('cityInput');
+            const city = cityInput.value.trim();
+
+            if (!city) {
+                showError("Please enter a city name");
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+            const weatherCard = document.getElementById('weatherData');
+
+            loading.classList.remove('hidden');
+            errorDiv.classList.add('hidden');
+            weatherCard.classList.add('hidden');
+
+            try {
+                // Step 1: Get coordinates using free geocoding
+                const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`);
+                const geoData = await geoRes.json();
+
+                if (!geoData.results || geoData.results.length === 0) {
+                    throw new Error("City not found");
+                }
+
+                const { latitude, longitude, name } = geoData.results[0];
+
+                // Step 2: Get current weather
+                const weatherRes = await fetch(
+                    `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,apparent_temperature,weather_code`
+                );
+
+                const weatherData = await weatherRes.json();
+
+                if (!weatherData.current) throw new Error("Weather data unavailable");
+
+                // Display data
+                document.getElementById('cityName').textContent = name;
+                document.getElementById('temperature').textContent = `${Math.round(weatherData.current.temperature_2m)}°C`;
+                document.getElementById('description').textContent = getWeatherDescription(weatherData.current.weather_code);
+                document.getElementById('humidity').textContent = `${weatherData.current.relative_humidity_2m}%`;
+                document.getElementById('wind').textContent = `${weatherData.current.wind_speed_10m} km/h`;
+                document.getElementById('feelsLike').textContent = `${Math.round(weatherData.current.apparent_temperature)}°C`;
+
+                weatherCard.classList.remove('hidden');
+
+            } catch (err) {
+                showError(err.message || "Failed to fetch weather. Please try again.");
+            } finally {
+                loading.classList.add('hidden');
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+
+        function getWeatherDescription(code) {
+            const descriptions = {
+                0: "Clear sky",
+                1: "Mainly clear",
+                2: "Partly cloudy",
+                3: "Overcast",
+                45: "Fog",
+                51: "Light drizzle",
+                61: "Rain",
+                71: "Snow",
+                80: "Rain showers",
+                95: "Thunderstorm"
+            };
+            return descriptions[code] || "Cloudy";
+        }
+
+        // Allow pressing Enter key
+        document.getElementById('cityInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') getWeather();
+        });
+
+        // Load default city (Hyderabad)
+        window.onload = () => {
+            document.getElementById('cityInput').value = "Hyderabad";
+            getWeather();
+        };
+    </script>
+</body>
+</html>

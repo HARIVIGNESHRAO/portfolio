@@ -3,46 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Interactive To-Do List - Hari Vignesh Rao">
-    <title>To-Do List | Hari Vignesh Rao</title>
+    <meta name="description" content="Hari Vignesh Rao - B.Tech CSE Student | Full Stack Developer | AI/ML Enthusiast">
+    <title>Hari Vignesh Rao | Portfolio</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <header>
         <nav aria-label="Main Navigation">
             <ul>
-                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html" aria-current="page">Home</a></li>
                 <li><a href="about.html">About</a></li>
                 <li><a href="projects.html">Projects</a></li>
                 <li><a href="contact.html">Contact</a></li>
-                <li><a href="todo.html" aria-current="page">To-Do App</a></li>
+                <li><a href="todo.html">To-Do App</a></li>
+                <li><a href="weather.html">Weather Dashboard</a></li>
             </ul>
+
+            <!-- Theme Toggle Button -->
             <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle Dark Mode">🌙</button>
         </nav>
     </header>
 
     <main>
-        <section class="todo-section">
-            <h1>Task Manager</h1>
-
-            <!-- Add Task -->
-            <div class="add-task">
-                <input type="text" id="taskInput" placeholder="What needs to be done?" aria-label="New task">
-                <button onclick="addTask()">Add Task</button>
-            </div>
-
-            <!-- Filters -->
-            <div class="filters">
-                <button onclick="filterTasks('all')" class="active" id="filter-all">All</button>
-                <button onclick="filterTasks('active')" id="filter-active">Active</button>
-                <button onclick="filterTasks('completed')" id="filter-completed">Completed</button>
-            </div>
-
-            <!-- Task List -->
-            <ul id="taskList" class="task-list"></ul>
-
-            <!-- Stats -->
-            <div class="stats" id="stats"></div>
+        <section id="hero">
+            <h1>Hari Vignesh Rao</h1>
+            <p>B.Tech Computer Science and Engineering Student (CGPA 8.85) | Full Stack Developer | AI/ML Enthusiast</p>
+            <a href="contact.html" class="btn" role="button">Get In Touch</a>
         </section>
     </main>
 
@@ -51,101 +37,16 @@
     </footer>
 
     <script>
-        // Load tasks from localStorage
-        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
-        function saveTasks() {
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-        }
+        document.documentElement.setAttribute('data-theme', newTheme);
 
-        function renderTasks(filteredTasks = tasks) {
-            const taskList = document.getElementById('taskList');
-            taskList.innerHTML = '';
-
-            filteredTasks.forEach((task, index) => {
-                const li = document.createElement('li');
-                li.className = `task-item ${task.completed ? 'completed' : ''}`;
-                li.innerHTML = `
-                    <input type="checkbox" ${task.completed ? 'checked' : ''}
-                           onchange="toggleComplete(${index})">
-                    <span>${task.text}</span>
-                    <div class="actions">
-                        <button onclick="editTask(${index})">✏️</button>
-                        <button onclick="deleteTask(${index})">🗑️</button>
-                    </div>
-                `;
-                taskList.appendChild(li);
-            });
-
-            updateStats();
-        }
-
-        function addTask() {
-            const input = document.getElementById('taskInput');
-            const text = input.value.trim();
-
-            if (text === '') return;
-
-            tasks.push({ text: text, completed: false });
-            saveTasks();
-            renderTasks();
-            input.value = '';
-        }
-
-        function toggleComplete(index) {
-            tasks[index].completed = !tasks[index].completed;
-            saveTasks();
-            renderTasks();
-        }
-
-        function deleteTask(index) {
-            tasks.splice(index, 1);
-            saveTasks();
-            renderTasks();
-        }
-
-        function editTask(index) {
-            const newText = prompt("Edit task:", tasks[index].text);
-            if (newText !== null && newText.trim() !== '') {
-                tasks[index].text = newText.trim();
-                saveTasks();
-                renderTasks();
-            }
-        }
-
-        function filterTasks(filter) {
-            let filtered = tasks;
-
-            if (filter === 'active') {
-                filtered = tasks.filter(t => !t.completed);
-            } else if (filter === 'completed') {
-                filtered = tasks.filter(t => t.completed);
-            }
-
-            // Update active button
-            document.querySelectorAll('.filters button').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.id === `filter-${filter}`) btn.classList.add('active');
-            });
-
-            renderTasks(filtered);
-        }
-
-        function updateStats() {
-            const total = tasks.length;
-            const completed = tasks.filter(t => t.completed).length;
-            document.getElementById('stats').innerHTML = `
-                ${total} tasks total | ${completed} completed
-            `;
-        }
-
-        // Keyboard support
-        document.getElementById('taskInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') addTask();
-        });
-
-        // Initial render
-        renderTasks();
+        // Change icon
+        const btn = document.querySelector('.theme-toggle');
+        btn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+    }
     </script>
 </body>
 </html>
